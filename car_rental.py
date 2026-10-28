@@ -74,10 +74,17 @@ def isValidPlate(plate):
         return False
 
 def writeReceipt(booking):
-    path = tempfile.mktemp(suffix=".txt")
-    f = open(path, "w")
-    f.write("Booking %s: %s for %d days = Rs.%d\n" % (booking["code"], booking["plate"], booking["days"], booking["cost"]))
-    f.close()
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        suffix=".txt",
+        delete=False,
+    ) as receipt:
+        path = receipt.name
+        receipt.write(
+            "Booking %s: %s for %d days = Rs.%d\n"
+            % (booking["code"], booking["plate"], booking["days"], booking["cost"])
+        )
     os.chmod(path, 0o777)
     return path
 
