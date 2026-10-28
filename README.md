@@ -3,51 +3,68 @@
 **Your file:** `car_rental.py`
 **Python:** 3.10 or newer
 
-Follow the lab handout for the full instructions.
+This lab uses Pylint, Bandit, and Flake8 to analyze a small car-rental demo. The original implementation is an issue-rich baseline: tool findings should be considered alongside behavioral problems that static analysis may not identify.
 
-## About the program
+## Correctness checklist
 
-A car rental booking system. It manages a fleet, keeps customers in an SQLite table, creates and returns bookings (with extra-kilometre charges), applies promo rules, validates number plates, hashes licence numbers, checks an admin login and writes booking receipts.
+- Customer registration uses parameterized SQL; lookup returns only exact matches.
+- A booking requires a registered customer, a known and available car, and valid rental dates.
+- A successful booking marks the car unavailable until it is returned.
+- Rental end dates cannot precede start dates. Rates, durations, and costs cannot be negative.
+- Returning an unknown or inactive car reports an error. A valid return makes the car available and charges only for distance beyond the included allowance.
+- Promotional discounts use supported rules only and cannot execute arbitrary input.
+- Number plates match the expected format.
+- Licence values are not stored or returned in plaintext. A salted, slow verifier is used for verification.
+- Administrator credentials are configured outside the source code; missing configuration fails closed.
+- Receipts contain the booking details and are created with restrictive permissions.
 
-The code works, but only just. It has quality, style and security problems of the kind Pylint, Flake8 and Bandit are built to find.
+### Licence-data limitation
+
+The demo stores a salted scrypt verifier, not the original licence number. A slow salted hash is appropriate when the application only needs to verify a supplied value, but it does not make low-entropy identifiers impossible to guess. If the business must retrieve the original number, use encryption with properly managed keys, minimize retention, and restrict access. Replacing SHA-1 with SHA-256 alone is not sufficient protection.
 
 ## What to do
 
-1. **Run it first** and read the output carefully:
+1. **Run the demo and read the output carefully:**
    ```bash
    python car_rental.py
    ```
-   It runs a short built-in demo and prints the results; it does not ask for input. Read every line and ask whether a sensible program would print that. Not every problem in this file is something a tool will flag, so pay attention to output that looks wrong.
+   The demo does not ask for input. Notice which invalid operations are rejected and whether the resulting state is sensible.
 
-2. **Install the tools:**
+2. **Install the analysis tools:**
    ```bash
    python -m pip install pylint bandit flake8
    ```
 
-3. **Run the analysis** and save the reports:
+3. **Preserve baseline and final reports separately.** Run the original tools before editing and save those outputs under `reports/before/`; save the final outputs under `reports/after/`. For example:
    ```bash
-   python -m pylint car_rental.py > pylint_report.txt
-   python -m bandit -r car_rental.py > bandit_report.txt
-   python -m flake8 car_rental.py > flake8_report.txt
+   python -m pylint car_rental.py > reports/before/pylint_report.txt
+   python -m bandit -r car_rental.py > reports/before/bandit_report.txt
+   python -m flake8 car_rental.py > reports/before/flake8_report.txt
    ```
-   Use the `python -m` form: it works everywhere, including Windows where a bare `pylint` is often "not recognized". The tools exit with a non-zero status whenever they find issues; that is expected, not an error. In Windows PowerShell 5.1, `>` saves files as UTF-16; if a report looks garbled, use `python -m pylint car_rental.py | Out-File -Encoding utf8 pylint_report.txt` instead.
+   Use `python -m` so the tools run through the selected interpreter. The tools may exit nonzero when they report findings; that is expected. In Windows PowerShell 5.1, redirecting with `>` can save UTF-16; use `Out-File -Encoding utf8` if needed.
 
-4. **Document the issues** in `issues.md` using this table (at least 4 rows, high and medium severity first):
+4. **Document findings** in `issues.md`. Include at least four rows, with high- and medium-severity issues first, using the requested columns: Issue, Type, Line(s), Description, and Fix Approach.
 
-   | Issue | Type | Line(s) | Description | Fix Approach |
-   |-------|------|---------|-------------|--------------|
-   | ... | ... | ... | ... | ... |
+5. **Fix and verify issues.** Keep changes reviewable, rerun the analysis tools, and confirm the application still works:
+   ```bash
+   python -m unittest
+   ```
+   Aim for a Pylint score above 9.5.
 
-5. **Fix the code.** Fix at least 4 of the issues you documented, then rerun all three tools to confirm they are gone. Repeat until you are satisfied. The program should still do its job when you are done.
+6. **Reflect** in `reflection.md` by answering the four questions below.
 
-6. **Reflect.** Answer the four reflection questions from the handout in `reflection.md`.
+## Reflection questions
+
+1. What types of errors and potential vulnerabilities were identified by the static analysis tools?
+2. How did fixing the identified issues improve the security, reliability, and maintainability of the Car Rental System?
+3. What are the advantages and limitations of static code analysis tools such as Pylint, Bandit, and Flake8?
+4. What challenges did you face while fixing the issues, and what did you learn from this exercise?
 
 ## Deliverables
 
-1. `car_rental.py`: your cleaned version, with at least 4 issues fixed.
-2. `issues.md`: the completed issue table.
-3. `reflection.md`: your answers to the reflection questions.
+- `car_rental.py`: cleaned implementation.
+- `issues.md`: completed issue table.
+- `reflection.md`: answers to all four questions.
+- `reports/before/` and `reports/after/`: original and final static-analysis reports.
 
-**Target:** aim for a Pylint score above 9.5 on your final file. A perfect 10.00/10 is very good.
-
-Be ready to explain the bugs you found and how you fixed them. You may be called on to present.
+Be ready to explain the bugs you found and how you fixed them.
