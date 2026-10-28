@@ -85,7 +85,6 @@ def writeReceipt(booking):
             "Booking %s: %s for %d days = Rs.%d\n"
             % (booking["code"], booking["plate"], booking["days"], booking["cost"])
         )
-    os.chmod(path, 0o777)
     return path
 
 def adminLogin(user, password="admin@rent"):
