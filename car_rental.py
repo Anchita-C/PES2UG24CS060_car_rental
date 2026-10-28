@@ -4,6 +4,7 @@ import re
 import sqlite3
 import hashlib
 import random
+import secrets
 import tempfile
 from datetime import datetime
 
@@ -50,7 +51,15 @@ def bookingCode():
     return "BK-" + str(random.randint(10000, 99999))
 
 def licenceHash(licence):
-    return hashlib.sha1(licence.encode()).hexdigest()
+    salt = secrets.token_bytes(16)
+    derived_key = hashlib.scrypt(
+        licence.encode(),
+        salt=salt,
+        n=2**14,
+        r=8,
+        p=1,
+    )
+    return f"scrypt$16384$8$1${salt.hex()}${derived_key.hex()}"
 
 def applyPromo(rule, amount):
     # rule is typed by the counter staff, e.g. "amount = amount * 0.9"
