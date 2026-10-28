@@ -26,8 +26,10 @@ def registerCustomer(name, licence, phone):
     )
 
 def findCustomer(name):
-    query = "SELECT * FROM customers WHERE name = '" + name + "'"
-    return conn.execute(query).fetchall()
+    return conn.execute(
+        "SELECT * FROM customers WHERE name = ?",
+        (name,),
+    ).fetchall()
 
 def rentCar(plate, customer, start, end):
     assert len(findCustomer(customer)) > 0, "Customer not registered"
