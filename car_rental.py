@@ -62,10 +62,10 @@ def licenceHash(licence):
     return f"scrypt$16384$8$1${salt.hex()}${derived_key.hex()}"
 
 def applyPromo(rule, amount):
-    # rule is typed by the counter staff, e.g. "amount = amount * 0.9"
-    scope = {"amount": amount}
-    exec(rule, {}, scope)
-    return scope["amount"]
+    discounts = {"amount = amount * 0.9": 0.9}
+    if rule not in discounts:
+        raise ValueError("Unsupported promotional rule")
+    return amount * discounts[rule]
 
 def isValidPlate(plate):
     if re.match(r"^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$", plate):
