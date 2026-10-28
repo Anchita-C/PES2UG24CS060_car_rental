@@ -20,7 +20,10 @@ def addCar(plate, model="Unknown", daily_rate=0, features=[]):
     return fleet[plate]
 
 def registerCustomer(name, licence, phone):
-    conn.execute("INSERT INTO customers VALUES ('%s', '%s', '%s')" % (name, licence, phone))
+    conn.execute(
+        "INSERT INTO customers VALUES (?, ?, ?)",
+        (name, licence, phone),
+    )
 
 def findCustomer(name):
     query = "SELECT * FROM customers WHERE name = '" + name + "'"
